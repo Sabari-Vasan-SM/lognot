@@ -1,0 +1,87 @@
+name: 'lognot Changelog & Release Action'
+description: 'Generate Conventional Commits changelogs and publish GitHub releases'
+author: 'Sabarivasan'
+branding:
+  icon: 'file-text'
+  color: 'blue'
+
+inputs:
+  github-token:
+    description: 'GitHub Token for creating/updating releases'
+    required: false
+    default: ${{ github.token }}
+  bump:
+    description: 'Bump strategy: auto, major, minor, patch'
+    required: false
+    default: 'auto'
+  dry-run:
+    description: 'Run without writing changes to changelog'
+    required: false
+    default: 'false'
+  release:
+    description: 'Publish a GitHub release for the latest version'
+    required: false
+    default: 'false'
+  out:
+    description: 'Output changelog file path'
+    required: false
+    default: 'CHANGELOG.md'
+  format:
+    description: 'Format style: keepachangelog or release'
+    required: false
+    default: 'keepachangelog'
+  package:
+    description: 'Monorepo package name to scope'
+    required: false
+  cwd:
+    description: 'Working directory path'
+    required: false
+    default: '.'
+
+outputs:
+  version:
+    description: 'Detected or bumped semver version'
+    value: ${{ steps.run-lognot.outputs.version }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Ensure Node.js is installed
+      uses: actions/setup-node@v4
+      with:
+        node-version: '>=20'
+
+    - name: Run lognot
+      id: run-lognot
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: |
+        ARGS=("--cwd" "${{ inputs.cwd }}" "--bump" "${{ inputs.bump }}" "--out" "${{ inputs.out }}" "--format" "${{ inputs.format }}")
+
+        if [ "${{ inputs.dry-run }}" = "true" ]; then
+          ARGS+=("--dry-run")
+        fi
+
+        if [ -n "${{ inputs.package }}" ]; then
+          ARGS+=("--package" "${{ inputs.package }}")
+        fi
+
+        # Run lognot CLI using npx or locally linked binary
+        if [ -f "${{ github.action_path }}/../dist/cli.js" ]; then
+          node "${{ github.action_path }}/../dist/cli.js" "${ARGS[@]}"
+        else
+          npx -y lognot "${ARGS[@]}"
+        fi
+
+        if [ "${{ inputs.release }}" = "true" ]; then
+          REL_ARGS=("--cwd" "${{ inputs.cwd }}")
+          if [ -n "${{ inputs.package }}" ]; then
+            REL_ARGS+=("--package" "${{ inputs.package }}")
+          fi
+          if [ -f "${{ github.action_path }}/../dist/cli.js" ]; then
+            node "${{ github.action_path }}/../dist/cli.js" release "${REL_ARGS[@]}"
+          else
+            npx -y lognot release "${REL_ARGS[@]}"
+          fi
+        fi

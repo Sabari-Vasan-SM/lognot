@@ -1,0 +1,24 @@
+{
+  "output": "CHANGELOG.md",
+  "format": "keepachangelog",
+  "tagPrefix": "v",
+  "bump": "auto",
+  "ignoreTypes": ["chore", "ci", "test", "style", "build"],
+  "includeMergeCommits": false,
+  "sections": {
+    "feat": { "title": "Features", "emoji": "✨" },
+    "fix": { "title": "Bug Fixes", "emoji": "🐛" },
+    "perf": { "title": "Performance", "emoji": "⚡" },
+    "security": { "title": "Security", "emoji": "🔒" },
+    "refactor": { "title": "Refactoring", "emoji": "♻️" },
+    "docs": { "title": "Documentation", "emoji": "📝" },
+    "revert": { "title": "Reverts", "emoji": "⏪" }
+  },
+  "repoUrl": "https://github.com/Sabari-Vasan-SM/lognot",
+  "github": {
+    "owner": "Sabari-Vasan-SM",
+    "repo": "lognot",
+    "draft": false,
+    "prerelease": false
+  }
+}
